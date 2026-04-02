@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Egg run — find the egg</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Shown after native splash; tap Play to begin -->
+      <div id="start-screen" class="start-screen" role="dialog" aria-labelledby="start-title" aria-modal="true">
+        <h1 id="start-title" class="start-title">Egg Hunt</h1>
+        <p class="start-tagline">Find the matching egg before time runs out.</p>
+        <button type="button" id="start-play-btn" class="win-btn start-play-btn">Play</button>
+      </div>
+
+      <!-- Top row: peek button | timer | score -->
+      <div class="top-row">
+        <button
+          type="button"
+          id="peek-btn"
+          class="peek-btn"
+          aria-label="Show or hide target egg"
+          aria-expanded="false"
+        >
+          <canvas id="peek-thumb" class="peek-thumb" width="40" height="40" aria-hidden="true"></canvas>
+        </button>
+        <span id="timer" class="timer" aria-live="polite" aria-label="Time remaining">60</span>
+        <button type="button" id="score-btn" class="score-btn" aria-label="Score – tap to pause">
+          <span class="score-label-hud">Score</span>
+          <span id="running-score" class="running-score">0</span>
+        </button>
+      </div>
+
+      <!-- Blocks taps to canvas / top row while peek or Next Round is active -->
+      <div id="interaction-blocker" class="interaction-blocker hidden" aria-hidden="true"></div>
+
+      <!-- Target peek overlay (drops down from top-left of top row) -->
+      <div id="peek-overlay" class="peek-overlay hidden" role="dialog" aria-label="Find this egg">
+        <p class="peek-label">Find this egg</p>
+        <canvas id="target-hint" width="112" height="148" aria-hidden="true"></canvas>
+        <button type="button" id="hint-btn" class="hint-btn">Hint</button>
+      </div>
+
+      <!-- Game canvas fills remaining space below top row -->
+      <canvas id="game" aria-label="Easter egg hunt play area"></canvas>
+
+      <!-- "Next Round" button shown on timer expiry -->
+      <button type="button" id="next-round-btn" class="next-round-btn hidden">Next Round</button>
+
+      <!-- Pause screen (fully opaque – hides the board) -->
+      <div id="pause-screen" class="pause-screen hidden" role="dialog" aria-label="Game paused">
+        <p class="pause-heading">Paused</p>
+        <div class="pause-actions">
+          <button type="button" id="pause-share" class="win-btn win-btn-secondary">Share</button>
+          <button type="button" id="pause-resume" class="win-btn">
+            Keep Playing<br />(Go for Gold)
+          </button>
+        </div>
+      </div>
+
+      <!-- Win overlay -->
+      <div id="win" class="win hidden" role="status" aria-live="polite">
+        <p>You found it!</p>
+        <p id="win-golden" class="win-golden hidden" hidden>
+          Next round: Golden Yolk — find the one egg that isn't all gold.
+        </p>
+        <p id="win-score" class="win-score" hidden></p>
+        <div class="win-actions">
+          <button type="button" id="open-share" class="win-btn win-btn-secondary">Share</button>
+          <button type="button" id="replay" class="win-btn">
+            Keep Playing<br />(Go for GOLD)
+          </button>
+        </div>
+      </div>
+
+      <!-- Share sheet -->
+      <div
+        id="share-sheet"
+        class="share-sheet hidden"
+        aria-hidden="true"
+        aria-labelledby="share-sheet-title"
+      >
+        <div class="share-sheet-backdrop" id="share-sheet-backdrop" tabindex="-1"></div>
+        <div class="share-sheet-panel" role="dialog">
+          <div class="share-sheet-handle" aria-hidden="true"></div>
+          <h2 id="share-sheet-title" class="share-sheet-title">Share</h2>
+          <p class="share-sheet-preview" id="share-text-preview"></p>
+          <div class="share-sheet-actions">
+            <button type="button" id="share-native" class="share-sheet-btn share-sheet-btn-primary">
+              Share…
+            </button>
+            <button type="button" id="share-copy" class="share-sheet-btn">Copy message</button>
+            <button type="button" id="share-close" class="share-sheet-btn share-sheet-btn-ghost">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

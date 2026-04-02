@@ -1,0 +1,613 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: linear-gradient(165deg, #e8f4fc 0%, #f5e8f8 45%, #fef6e4 100%);
+  color: #2a2438;
+  overscroll-behavior: none;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* ─── App shell ────────────────────────────────────────────────────────────── */
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Top row ───────────────────────────────────────────────────────────────── */
+
+.top-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: max(0.55rem, env(safe-area-inset-top));
+  padding-left: max(0.65rem, env(safe-area-inset-left));
+  padding-right: max(0.65rem, env(safe-area-inset-right));
+  padding-bottom: 0.45rem;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 rgba(42, 36, 56, 0.08);
+  position: relative;
+  z-index: 8;
+}
+
+/* ─── Interaction blocker (peek / Next Round / hint-reveal) ───────────────── */
+
+.interaction-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  background: transparent;
+  touch-action: none;
+}
+
+/* When only the peek card is open: block the board, not the top row (peek toggle must stay tappable). */
+.interaction-blocker.interaction-blocker--canvas-only {
+  top: calc(max(0.55rem, env(safe-area-inset-top)) + 3.5rem);
+}
+
+.interaction-blocker.hidden {
+  display: none;
+}
+
+/* ─── Start / pre-play dashboard ───────────────────────────────────────────── */
+
+.start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(165deg, #e8f4fc 0%, #f5e8f8 45%, #fef6e4 100%);
+  text-align: center;
+}
+
+.start-screen.hidden {
+  display: none;
+}
+
+.start-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #2a2438;
+}
+
+.start-tagline {
+  margin: 0;
+  max-width: 18rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #5a4d6e;
+}
+
+.start-play-btn {
+  margin-top: 0.5rem;
+  min-width: 10rem;
+  font-size: 1.1rem;
+  padding: 0.75rem 1.5rem;
+}
+
+/* ─── Peek button (top-left in row) ────────────────────────────────────────── */
+
+.peek-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 2px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(107, 79, 154, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(42, 36, 56, 0.1);
+}
+
+.peek-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.peek-btn:hover {
+  background: rgba(107, 79, 154, 0.12);
+}
+
+.peek-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+.peek-btn.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ─── Timer (center of row) ─────────────────────────────────────────────────── */
+
+.timer {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #2a2438;
+  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(42, 36, 56, 0.1);
+}
+
+.timer.urgent {
+  color: #c0392b;
+  background: rgba(255, 230, 225, 0.9);
+}
+
+/* ─── Score button (right of row) ───────────────────────────────────────────── */
+
+.score-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0.18rem 0.6rem 0.22rem;
+  border-radius: 0.65rem;
+  border: 1.5px solid rgba(107, 79, 154, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 1px 6px rgba(42, 36, 56, 0.1);
+}
+
+.score-btn:hover {
+  background: rgba(107, 79, 154, 0.1);
+}
+
+.score-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+.score-label-hud {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b5f7a;
+  line-height: 1.3;
+}
+
+.running-score {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: #5a4282;
+  line-height: 1.1;
+}
+
+/* ─── Peek overlay (drops down from top-left) ───────────────────────────────── */
+
+.peek-overlay {
+  position: fixed;
+  /* sits just below the top row; top-row height is approximately 3.5rem + safe-area */
+  top: calc(max(0.55rem, env(safe-area-inset-top)) + 3.5rem);
+  left: max(0.65rem, env(safe-area-inset-left));
+  width: 9.5rem;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 0.9rem;
+  box-shadow:
+    0 4px 24px rgba(42, 36, 56, 0.14),
+    0 0 0 1px rgba(255, 255, 255, 0.85) inset;
+  padding: 0.65rem 0.7rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.peek-overlay.hidden {
+  display: none;
+}
+
+.peek-overlay > .peek-label {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.peek-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #4a3d63;
+  line-height: 1.2;
+}
+
+#target-hint {
+  display: block;
+  width: 100%;
+  max-width: 7.25rem;
+  height: auto;
+  aspect-ratio: 112 / 148;
+  border-radius: 0.45rem;
+  box-shadow: 0 0 0 1px rgba(74, 61, 99, 0.12);
+}
+
+/* ─── Hint button ───────────────────────────────────────────────────────────── */
+
+.hint-btn {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(107, 79, 154, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+  color: #5a4282;
+  cursor: pointer;
+}
+
+.hint-btn:hover:not(:disabled) {
+  background: rgba(107, 79, 154, 0.1);
+}
+
+.hint-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hint-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+/* ─── Game canvas (fills remaining space below top row) ─────────────────────── */
+
+#game {
+  flex: 1;
+  display: block;
+  width: 100%;
+  min-height: 0;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* ─── Next Round button (shown on timer expiry) ─────────────────────────────── */
+
+.next-round-btn {
+  position: fixed;
+  bottom: max(2rem, calc(env(safe-area-inset-bottom) + 1.5rem));
+  left: 50%;
+  transform: translateX(-50%);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.7rem 1.75rem;
+  border-radius: 999px;
+  border: none;
+  background: #c0392b;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(192, 57, 43, 0.35);
+  white-space: nowrap;
+}
+
+.next-round-btn:hover {
+  background: #a93226;
+}
+
+.next-round-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+.next-round-btn.hidden {
+  display: none;
+}
+
+/* ─── Pause screen (fully opaque) ───────────────────────────────────────────── */
+
+.pause-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background: linear-gradient(165deg, #e8f4fc 0%, #f5e8f8 45%, #fef6e4 100%);
+  z-index: 11;
+}
+
+.pause-screen.hidden {
+  display: none;
+}
+
+.pause-heading {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2a2438;
+  letter-spacing: -0.02em;
+}
+
+.pause-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+/* ─── Golden mode ───────────────────────────────────────────────────────────── */
+
+#app.golden-mode .peek-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#app.golden-mode .peek-overlay {
+  display: none;
+}
+
+/* ─── Win overlay ───────────────────────────────────────────────────────────── */
+
+.win {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+
+.win.hidden {
+  display: none;
+}
+
+.win p {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.win-score {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #5a4282;
+}
+
+.win-score[hidden] {
+  display: none !important;
+}
+
+.win-golden {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #9a7209;
+  max-width: 22rem;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.win-golden.hidden,
+.win-golden[hidden] {
+  display: none !important;
+}
+
+.win-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.win-btn {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  border: none;
+  background: #6b4f9a;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+
+.win-btn:hover {
+  background: #5a4282;
+}
+
+.win-btn-secondary {
+  background: rgba(255, 255, 255, 0.95);
+  color: #5a4282;
+  border: 1px solid rgba(107, 79, 154, 0.35);
+}
+
+.win-btn-secondary:hover {
+  background: rgba(107, 79, 154, 0.12);
+}
+
+.win-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+/* ─── Share sheet ───────────────────────────────────────────────────────────── */
+
+.share-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  pointer-events: none;
+}
+
+.share-sheet:not(.hidden) {
+  pointer-events: auto;
+}
+
+.share-sheet.hidden {
+  display: none;
+}
+
+.share-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(42, 36, 56, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.share-sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 0.5rem 1.1rem 1.15rem;
+  border-radius: 1.1rem 1.1rem 0 0;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 -8px 32px rgba(42, 36, 56, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.85) inset;
+  animation: share-sheet-in 0.22s ease-out;
+}
+
+@keyframes share-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.share-sheet-handle {
+  width: 2.25rem;
+  height: 0.28rem;
+  margin: 0.35rem auto 0.5rem;
+  border-radius: 999px;
+  background: rgba(74, 61, 99, 0.2);
+}
+
+.share-sheet-title {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #2a2438;
+  text-align: center;
+}
+
+.share-sheet-preview {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #4a3d63;
+  background: rgba(232, 244, 252, 0.65);
+  border-radius: 0.65rem;
+  border: 1px solid rgba(74, 61, 99, 0.1);
+  word-break: break-word;
+}
+
+.share-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.share-sheet-btn {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(107, 79, 154, 0.25);
+  background: rgba(255, 255, 255, 0.95);
+  color: #5a4282;
+  cursor: pointer;
+}
+
+.share-sheet-btn:hover {
+  background: rgba(107, 79, 154, 0.08);
+}
+
+.share-sheet-btn-primary {
+  background: #6b4f9a;
+  border-color: transparent;
+  color: #fff;
+}
+
+.share-sheet-btn-primary:hover {
+  background: #5a4282;
+}
+
+.share-sheet-btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: #6b5f7a;
+  font-weight: 500;
+}
+
+.share-sheet-btn-ghost:hover {
+  background: rgba(74, 61, 99, 0.06);
+}
+
+.share-sheet-btn:focus-visible {
+  outline: 2px solid #2a2438;
+  outline-offset: 2px;
+}
+
+@media (min-width: 480px) {
+  .share-sheet {
+    align-items: center;
+    padding: 1rem;
+  }
+
+  .share-sheet-panel {
+    border-radius: 1.1rem;
+    padding: 0.65rem 1.25rem 1.25rem;
+  }
+
+  .share-sheet-handle {
+    display: none;
+  }
+}
